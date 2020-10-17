@@ -2,6 +2,9 @@ import json
 import boto3
 import os
 
+from elasticsearch import Elasticsearch
+es = Elasticsearch(os.environ['es_server'], http_auth=(os.environ['es_user'], os.environ['es_passwd']), scheme="https", port=443)
+
 s3 = boto3.resource('s3')
 comprehend = boto3.client('comprehend')
 translate = boto3.client('translate')
@@ -82,6 +85,7 @@ def lambda_handler(event, context):
                             'Data': json.dumps(entity_record) + '\n'
                         }
                     )
+                    res = es.index(index='test-index', id=tweet['id'], body=entity_record)
                     seen_entities.append(id)
             
     return 'true'
